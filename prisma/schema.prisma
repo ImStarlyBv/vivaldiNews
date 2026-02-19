@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Article {
+  id              String    @id @default(cuid())
+  title           String
+  slug            String    @unique
+  content         String    @db.Text
+  summary         String
+  imageUrl        String?
+  category        String
+  country         String
+  language        String
+  sourceQuery     String
+  publishedAt     DateTime  @default(now())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  metaTitle       String
+  metaDescription String
+  keywords        String[]
+
+  @@index([country, publishedAt])
+  @@index([category, publishedAt])
+  @@index([publishedAt])
+  @@index([slug])
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+}
+
+model TrendingTopic {
+  id           String    @id @default(cuid())
+  topic        String
+  country      String
+  searchVolume Int       @default(0)
+  coveredAt    DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([country, coveredAt])
+  @@index([createdAt])
+}

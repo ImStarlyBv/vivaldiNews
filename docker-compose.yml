@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://vivaldi:vivaldi@db:5432/vivaldinews
+      - AI_API_URL=${AI_API_URL}
+      - AI_API_KEY=${AI_API_KEY}
+      - BRAVE_API_KEY=${BRAVE_API_KEY}
+      - CRON_SECRET=${CRON_SECRET}
+      - NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    command: sh -c "npx prisma migrate deploy && node server.js"
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: vivaldi
+      POSTGRES_PASSWORD: vivaldi
+      POSTGRES_DB: vivaldinews
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vivaldi"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  pgdata:
