@@ -3,7 +3,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy package files
-COPY package.json ./
+COPY package.json package-lock.json* ./
 
 # Install all dependencies
 RUN npm install --legacy-peer-deps
@@ -14,7 +14,7 @@ COPY . .
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Build Next.js app
+# Build Next.js app (standalone output)
 ARG COOLIFY_URL
 ARG COOLIFY_FQDN
 ARG AI_API_KEY
@@ -38,7 +38,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm run build
 
-# Stage 2: Runner
+# Stage 2: Runner (standalone)
 FROM node:20-alpine AS runner
 WORKDIR /app
 
@@ -49,8 +49,17 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs \
  && adduser --system --uid 1001 nextjs
 
-# Copy built app from builder
-COPY --from=builder /app .
+# Copy standalone build output
+COPY --from=builder /app/.next/standalone ./
+# Copy static files
+COPY --from=builder /app/.next/static ./.next/static
+# Copy public folder
+COPY --from=builder /app/public ./public
+# Copy prisma schema + migrations for runtime migrate
+COPY --from=builder /app/prisma ./prisma
+# Copy node_modules/.prisma for prisma client
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # Use non-root user
 USER nextjs
@@ -59,5 +68,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Start the Next.js production server
-CMD ["npm", "run", "start"]
+# Start standalone server
+CMD ["node", "server.js"]
