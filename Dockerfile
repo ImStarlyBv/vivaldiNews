@@ -2,6 +2,9 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# Install build tools needed for native modules
+RUN apk add --no-cache --virtual .build-deps python3 make g++
+
 # Copy package files
 COPY package.json package-lock.json* ./
 
@@ -38,6 +41,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm run build
 
+# Remove build dependencies to keep image small
+RUN apk del .build-deps || true
+
 # Stage 2: Runner (standalone)
 FROM node:20-alpine AS runner
 WORKDIR /app
@@ -60,6 +66,9 @@ COPY --from=builder /app/prisma ./prisma
 # Copy node_modules/.prisma for prisma client
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+
+# Ensure correct permissions for non-root user
+RUN chown -R nextjs:nextjs /app || true
 
 # Use non-root user
 USER nextjs
