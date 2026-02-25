@@ -62,9 +62,9 @@ export const i18n = {
   },
 } as const;
 
-export type T = typeof i18n.en;
+export type T = (typeof i18n)[Lang];
 
-export function t(lang: Lang): T {
+export function t(lang: Lang) {
   return i18n[lang] ?? i18n.en;
 }
 
