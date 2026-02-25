@@ -5,11 +5,10 @@
   "private": true,
   "scripts": {
     "dev": "node scripts/setup.js && next dev",
-    "build": "node scripts/setup.js && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "setup": "node scripts/setup.js",
-    "postinstall": "node scripts/setup.js"
+    "setup": "node scripts/setup.js"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
