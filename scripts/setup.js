@@ -768,7 +768,8 @@ for (const { path: relPath, content } of sampleArticles) {
 
 console.log('\n✅ Vivaldi News setup complete. Run: npm run dev\n');
 
-
+// --- END OF SETUP ---
+/*
 const dirs = [
   'content/categories',
   'content/articles/ukraine-russia/en',
@@ -1164,3 +1165,4 @@ for (const { path: relPath, content } of sampleArticles) {
 }
 
 console.log('\n✅ Vivaldi News content setup complete.\n');
+*/
