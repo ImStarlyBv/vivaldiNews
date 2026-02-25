@@ -1,55 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getAllArticles } from '@/lib/content';
+import { isValidLang, type Lang } from '@/lib/i18n';
 
 export async function GET(request: NextRequest) {
-  try {
-    const searchParams = request.nextUrl.searchParams;
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const country = searchParams.get('country');
-    const category = searchParams.get('category');
-    const language = searchParams.get('language');
+  const { searchParams } = new URL(request.url);
+  const lang = (searchParams.get('lang') || 'en') as Lang;
+  const category = searchParams.get('category') || undefined;
+  const page = parseInt(searchParams.get('page') || '1');
+  const limit = parseInt(searchParams.get('limit') || '10');
 
-    const where: any = {};
-    if (country) where.country = country;
-    if (category) where.category = category;
-    if (language) where.language = language;
-
-    const [articles, totalCount] = await Promise.all([
-      prisma.article.findMany({
-        where,
-        orderBy: { publishedAt: 'desc' },
-        take: limit,
-        skip: (page - 1) * limit,
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          summary: true,
-          imageUrl: true,
-          category: true,
-          country: true,
-          language: true,
-          publishedAt: true,
-        },
-      }),
-      prisma.article.count({ where }),
-    ]);
-
-    return NextResponse.json({
-      articles,
-      pagination: {
-        page,
-        limit,
-        totalCount,
-        totalPages: Math.ceil(totalCount / limit),
-      },
-    });
-  } catch (error) {
-    console.error('Error fetching articles:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch articles' },
-      { status: 500 }
-    );
+  if (!isValidLang(lang)) {
+    return NextResponse.json({ error: 'Invalid lang' }, { status: 400 });
   }
+
+  const all = getAllArticles({ lang, category });
+  const total = all.length;
+  const articles = all.slice((page - 1) * limit, page * limit).map((a) => ({
+    slug: a.slug,
+    title: a.title,
+    excerpt: a.excerpt,
+    date: a.date,
+    category: a.category,
+    conflict: a.conflict,
+    side: a.side,
+    lang: a.lang,
+    tags: a.tags,
+    image: a.image,
+  }));
+
+  return NextResponse.json({ articles, total, page, totalPages: Math.ceil(total / limit) });
 }
+

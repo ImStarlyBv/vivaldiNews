@@ -1,21 +1,23 @@
 {
   "name": "vivaldi-news",
-  "version": "1.0.0",
-  "description": "Vivaldi News - Trending Now, Written Fresh",
+  "version": "2.0.0",
+  "description": "Vivaldi News — Both Sides. Full Picture.",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "npx prisma generate && next build",
+    "dev": "node scripts/setup.js && next dev",
+    "build": "node scripts/setup.js && next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "echo skip"
+    "setup": "node scripts/setup.js",
+    "postinstall": "node scripts/setup.js"
   },
   "dependencies": {
-    "@prisma/client": "^5.20.0",
+    "gray-matter": "^4.0.3",
     "next": "^14.2.22",
+    "next-mdx-remote": "^5.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "prisma": "^5.20.0"
+    "reading-time": "^1.5.0"
   },
   "devDependencies": {
     "@types/node": "^20.17.10",

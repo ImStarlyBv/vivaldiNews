@@ -1,9 +1,6 @@
-interface AIMessage {
-  role: 'system' | 'user' | 'assistant';
-  content: string;
-}
+// Removed — content is now file-based via OpenClaw + GitHub push workflow.
+export {};
 
-interface AIResponse {
   choices: Array<{
     message: {
       content: string;

@@ -1,10 +1,6 @@
-interface BraveSearchResult {
-  query: string;
-  discussions?: {
-    results?: Array<{
-      data: {
-        title: string;
-        description: string;
+// Removed — content is now file-based via OpenClaw + GitHub push workflow.
+export {};
+
       };
     }>;
   };

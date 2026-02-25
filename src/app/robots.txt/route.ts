@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
+import { SITE_URL } from '@/lib/seo';
 
 export function GET() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  return new NextResponse(`User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE_URL}/sitemap.xml\n`, {
+    headers: { 'Content-Type': 'text/plain' },
+  });
+}
 
   const robotsTxt = `# Vivaldi News - Robots.txt
 User-agent: *

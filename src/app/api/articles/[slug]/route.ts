@@ -1,28 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getArticleBySlug } from '@/lib/content';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
-  try {
-    const article = await prisma.article.findUnique({
-      where: { slug: params.slug },
-    });
-
-    if (!article) {
-      return NextResponse.json(
-        { error: 'Article not found' },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ article });
-  } catch (error) {
-    console.error('Error fetching article:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch article' },
-      { status: 500 }
-    );
-  }
+  const { searchParams } = new URL(request.url);
+  const lang = searchParams.get('lang') || 'en';
+  const article = getArticleBySlug(params.slug, lang);
+  if (!article) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  return NextResponse.json(article);
 }
+

@@ -2,47 +2,19 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Install build tools needed for native modules
-RUN apk add --no-cache --virtual .build-deps python3 make g++
-
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install all dependencies
+# Install dependencies (triggers postinstall → scripts/setup.js)
 RUN npm install --legacy-peer-deps
 
-# Copy source
+# Copy source (includes content/ if pre-seeded, otherwise setup.js creates it)
 COPY . .
 
-# Generate Prisma Client
-RUN npx prisma generate
-
-# Build Next.js app (standalone output)
-ARG COOLIFY_URL
-ARG COOLIFY_FQDN
-ARG AI_API_KEY
-ARG AI_API_URL
-ARG BRAVE_API_KEY
-ARG CRON_SECRET
-ARG DATABASE_URL
-ARG NEXT_PUBLIC_SITE_URL
-ARG COOLIFY_BUILD_SECRETS_HASH
-
-ENV COOLIFY_URL=$COOLIFY_URL
-ENV COOLIFY_FQDN=$COOLIFY_FQDN
-ENV AI_API_KEY=$AI_API_KEY
-ENV AI_API_URL=$AI_API_URL
-ENV BRAVE_API_KEY=$BRAVE_API_KEY
-ENV CRON_SECRET=$CRON_SECRET
-ENV DATABASE_URL=$DATABASE_URL
-ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
-ENV COOLIFY_BUILD_SECRETS_HASH=$COOLIFY_BUILD_SECRETS_HASH
+# Build Next.js app (also runs setup.js to ensure directories exist)
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm run build
-
-# Remove build dependencies to keep image small
-RUN apk del .build-deps || true
 
 # Stage 2: Runner (standalone)
 FROM node:20-alpine AS runner
@@ -51,31 +23,20 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Create non-root user
 RUN addgroup --system --gid 1001 nodejs \
  && adduser --system --uid 1001 nextjs
 
 # Copy standalone build output
 COPY --from=builder /app/.next/standalone ./
-# Copy static files
 COPY --from=builder /app/.next/static ./.next/static
-# Copy public folder
 COPY --from=builder /app/public ./public
-# Copy prisma schema + migrations for runtime migrate
-COPY --from=builder /app/prisma ./prisma
-# Copy node_modules/.prisma for prisma client
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+# Copy content directory (articles and categories)
+COPY --from=builder /app/content ./content
 
-# Ensure correct permissions for non-root user
 RUN chown -R nextjs:nextjs /app || true
 
-# Use non-root user
 USER nextjs
 
-EXPOSE 3000
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
+EXPOSE 8347
 
-# Start standalone server
 CMD ["node", "server.js"]

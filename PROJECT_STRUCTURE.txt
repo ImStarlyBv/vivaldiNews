@@ -1,0 +1,366 @@
+================================================================================
+  VIVALDI NEWS — PROJECT STRUCTURE & ARCHITECTURE PLAN
+  Conflict-aware, multi-language, GitHub-driven news platform
+================================================================================
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Framework      : Next.js 14 (App Router) — already in place
+Styling        : Tailwind CSS — already in place
+Content source : Markdown/MDX files committed to GitHub (NO database for articles)
+Deploy         : Coolify — auto-deploys on every GitHub push via webhook
+Scraper        : OpenClaw MCP server feeds content into the GitHub repo
+SEO            : Per-article metadata in frontmatter, auto sitemap, RSS feed
+
+The key idea: articles are just .md files in /content/. Pushing to GitHub = 
+publishing. Coolify rebuilds the static/SSR site automatically.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  FOLDER STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+vivaldi-news/
+│
+├── content/                          ← ALL editorial content lives here
+│   │
+│   ├── categories/                   ← One .json per category
+│   │   ├── world.json
+│   │   ├── politics.json
+│   │   ├── technology.json
+│   │   └── (add any category by pushing a new .json)
+│   │
+│   └── articles/                     ← Articles organized by conflict/topic
+│       │
+│       ├── ukraine-russia/           ← Conflict slug (becomes URL base)
+│       │   ├── conflict.json         ← Conflict metadata (side A name, side B name, flag, color)
+│       │   │
+│       │   ├── en/                   ← Language variant
+│       │   │   ├── 2024-02-24-kyiv-offensive-side-a.md   ← Ukrainian perspective
+│       │   │   └── 2024-02-24-kyiv-offensive-side-b.md   ← Russian perspective
+│       │   │
+│       │   ├── es/                   ← Spanish variant
+│       │   │   ├── 2024-02-24-ofensiva-kyiv-side-a.md
+│       │   │   └── 2024-02-24-ofensiva-kyiv-side-b.md
+│       │   │
+│       │   └── ru/                   ← Russian language variant
+│       │       ├── 2024-02-24-nastuplenie-side-a.md
+│       │       └── 2024-02-24-nastuplenie-side-b.md
+│       │
+│       ├── israel-palestine/         ← Another conflict
+│       │   ├── conflict.json
+│       │   ├── en/
+│       │   ├── es/
+│       │   └── ar/                   ← Arabic variant
+│       │
+│       └── standard/                 ← Non-conflict articles (single perspective)
+│           ├── en/
+│           │   └── 2024-02-24-some-news.md
+│           └── es/
+│
+├── src/
+│   ├── app/                          ← Next.js App Router pages
+│   │   ├── layout.tsx                ← Root layout (Header, Footer, SEO defaults)
+│   │   ├── page.tsx                  ← Homepage (latest articles, trending)
+│   │   ├── globals.css
+│   │   │
+│   │   ├── [lang]/                   ← Language prefix: /en/ /es/ /ru/ /ar/
+│   │   │   ├── layout.tsx            ← Sets html lang attribute, hreflang tags
+│   │   │   ├── page.tsx              ← Localized homepage
+│   │   │   │
+│   │   │   ├── category/
+│   │   │   │   └── [slug]/
+│   │   │   │       └── page.tsx      ← /en/category/world
+│   │   │   │
+│   │   │   └── conflict/
+│   │   │       └── [conflict]/
+│   │   │           └── [article]/
+│   │   │               └── page.tsx  ← /en/conflict/ukraine-russia/kyiv-offensive
+│   │   │                               (renders BOTH sides, switch toggles them)
+│   │   │
+│   │   ├── api/
+│   │   │   ├── sitemap/route.ts      ← Dynamic XML sitemap generation
+│   │   │   ├── rss/route.ts          ← RSS/Atom feed per language & category
+│   │   │   └── revalidate/route.ts   ← Webhook endpoint for on-demand ISR
+│   │   │
+│   │   ├── sitemap.xml/              ← Static sitemap fallback
+│   │   └── robots.txt/
+│   │
+│   ├── components/
+│   │   ├── layout/
+│   │   │   ├── Header.tsx            ← Nav, language switcher, search
+│   │   │   ├── Footer.tsx
+│   │   │   └── TrendingBar.tsx       ← Scrolling trending topics bar
+│   │   │
+│   │   ├── article/
+│   │   │   ├── ArticleCard.tsx       ← Card for listings (has "conflict" badge)
+│   │   │   ├── ArticleBody.tsx       ← Renders markdown body
+│   │   │   ├── ArticleSEO.tsx        ← Injects structured data (JSON-LD)
+│   │   │   └── PerspectiveSwitch.tsx ← THE CORE COMPONENT (see below)
+│   │   │
+│   │   ├── conflict/
+│   │   │   ├── ConflictBanner.tsx    ← Shows "You are viewing: [Side A] perspective"
+│   │   │   └── ConflictBadge.tsx     ← Small badge on cards indicating it's dual-view
+│   │   │
+│   │   └── ui/
+│   │       ├── LanguageSwitcher.tsx  ← Dropdown /en /es /ru /ar
+│   │       ├── CategoryNav.tsx
+│   │       └── Pagination.tsx
+│   │
+│   └── lib/
+│       ├── content.ts                ← Reads .md files from /content/, parses frontmatter
+│       ├── conflicts.ts              ← Reads conflict.json files, resolves side A/B
+│       ├── categories.ts             ← Reads category .json files
+│       ├── seo.ts                    ← Generates meta tags, JSON-LD, hreflang
+│       └── i18n.ts                   ← Language config and URL helpers
+│
+├── public/
+│   ├── flags/                        ← Country/side flag SVGs
+│   └── og/                           ← Default OG images per category
+│
+├── .github/
+│   └── workflows/
+│       └── validate-content.yml      ← On PR: validates frontmatter schema of new .md files
+│
+├── Dockerfile                        ← Already exists, keep for Coolify
+├── docker-compose.yml                ← Already exists
+├── next.config.js
+└── package.json
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ARTICLE MARKDOWN FORMAT (frontmatter)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every article is a .md file with YAML frontmatter at the top.
+This frontmatter drives all SEO and routing automatically.
+
+--- (for a CONFLICT article, side A)
+title: "Ukraine launches new offensive near Kharkiv"
+slug: "ukraine-offensive-kharkiv"
+conflict: "ukraine-russia"
+side: "A"                          ← A = first side defined in conflict.json
+lang: "en"
+date: "2024-02-24"
+category: "world"
+excerpt: "Ukrainian forces advanced..."   ← Used for meta description & card preview
+author: "Vivaldi News Desk"
+source_url: "https://..."          ← Original source scraped by OpenClaw
+source_name: "Reuters"
+image: "/images/ukraine-kharkiv.jpg"
+image_alt: "Ukrainian soldiers near Kharkiv"
+tags: ["ukraine", "russia", "war", "kharkiv"]
+featured: false
+---
+
+Article body in markdown here...
+
+
+--- (for a STANDARD non-conflict article)
+title: "Tech giants report record profits"
+slug: "tech-giants-profits-q4"
+conflict: null                     ← null = no dual perspective switch shown
+side: null
+lang: "en"
+date: "2024-02-24"
+category: "technology"
+excerpt: "Apple, Google and Microsoft..."
+author: "Vivaldi News Desk"
+source_url: "https://..."
+source_name: "Bloomberg"
+image: "/images/tech-profits.jpg"
+image_alt: "Stock market display"
+tags: ["technology", "finance", "apple", "google"]
+featured: true
+---
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  CONFLICT METADATA FILE (conflict.json)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+content/articles/ukraine-russia/conflict.json
+
+{
+  "slug": "ukraine-russia",
+  "title": "Ukraine - Russia War",
+  "sideA": {
+    "name": "Ukraine",
+    "label": "Ukrainian Perspective",
+    "flag": "🇺🇦",
+    "color": "#0057B7",
+    "accentColor": "#FFD700"
+  },
+  "sideB": {
+    "name": "Russia",
+    "label": "Russian Perspective",
+    "flag": "🇷🇺",
+    "color": "#CC0000",
+    "accentColor": "#FFFFFF"
+  },
+  "description": "Ongoing war between Russia and Ukraine since February 2022",
+  "active": true
+}
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  CATEGORY FILE (categories/world.json)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{
+  "slug": "world",
+  "label": {
+    "en": "World",
+    "es": "Mundo",
+    "ru": "Мир",
+    "ar": "العالم"
+  },
+  "description": {
+    "en": "International news and global affairs"
+  },
+  "seoTitle": {
+    "en": "World News | Vivaldi News"
+  },
+  "metaDescription": {
+    "en": "Latest world news and international affairs from all perspectives"
+  }
+}
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  THE PERSPECTIVE SWITCH (core UX feature)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+When a conflict article is opened, both side-A and side-B content is loaded
+server-side. The switch is a client component that toggles visibility.
+
+Visual behavior:
+  ┌────────────────────────────────────────────────────────┐
+  │  🇺🇦 Ukrainian Perspective  ●────────  Russian Perspective 🇷🇺 │
+  │  [colored banner changes color based on active side]   │
+  └────────────────────────────────────────────────────────┘
+
+- Switch state stored in localStorage so it persists across page reloads
+- URL does NOT change on toggle (both perspectives share one canonical URL)
+- Both sides are rendered in the HTML (one hidden via CSS) — good for SEO
+- The active side's content is what Google indexes per canonical
+- Structured data (JSON-LD NewsArticle) reflects the currently canonical side
+- Social share button shares the current side's content
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  URL STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Homepage (default lang)
+  /
+
+Language homepages
+  /en/
+  /es/
+  /ru/
+  /ar/
+
+Category pages
+  /en/category/world
+  /es/category/mundo
+  /en/category/technology
+
+Conflict article (dual-perspective)
+  /en/conflict/ukraine-russia/ukraine-offensive-kharkiv
+  /es/conflict/ukraine-russia/ofensiva-ucrania-kharkiv
+
+Standard article
+  /en/news/tech-giants-profits-q4
+  /es/noticias/beneficios-tecnologicas-q4
+
+RSS feeds
+  /api/rss?lang=en
+  /api/rss?lang=es&category=world
+
+Sitemap
+  /sitemap.xml (all languages, all articles)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SEO STRATEGY (per article)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Each article push automatically gets:
+  ✓ <title> and <meta description> from frontmatter
+  ✓ Open Graph tags (og:title, og:description, og:image, og:type=article)
+  ✓ Twitter Card tags
+  ✓ JSON-LD structured data (NewsArticle schema)
+  ✓ hreflang tags linking all language variants of the same article
+  ✓ Canonical URL
+  ✓ Auto-added to XML sitemap (with lastmod = file commit date)
+  ✓ Auto-added to RSS feed
+  ✓ Breadcrumb structured data
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  OPENCLAW MCP SERVER INTEGRATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+OpenClaw scrapes news sources for both sides of each conflict.
+It then:
+  1. Creates a properly formatted .md file (with full SEO frontmatter)
+  2. Commits it to the correct path in /content/articles/[conflict]/[lang]/
+  3. Pushes to the GitHub repo
+
+On push → Coolify webhook fires → Next.js rebuild → article is live.
+
+OpenClaw needs to know the conflict.json schema and the frontmatter schema
+so it generates correctly structured files every time.
+
+Suggested OpenClaw output contract:
+  - File path   : content/articles/{conflict}/{lang}/{date}-{slug}-side-{a|b}.md
+  - Frontmatter : all required fields (see Article Markdown Format above)
+  - Body        : clean markdown, no HTML, no ads
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  DEPLOYMENT FLOW (Coolify + GitHub)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Any push to main branch (articles, categories, or code changes)
+2. Coolify receives GitHub webhook
+3. Coolify pulls latest code + content
+4. Docker build runs (next build)
+5. New container replaces old one — zero downtime
+6. New articles are live
+
+No CMS, no database migrations, no deploy pipeline config needed per article.
+Pushing a .md file IS publishing.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  THINGS TO DECIDE / CONFIRM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. PRISMA / DATABASE
+   The current project uses Prisma. Do you want to KEEP the database for
+   anything (user accounts, comments, analytics) or DROP it entirely and
+   go 100% file-based? Dropping simplifies the stack a lot. DROP THAT  BS 
+
+2. PERSPECTIVE SWITCH DEFAULT
+   Which side should be shown by default when someone opens a conflict article?
+   Option A: Always side A (e.g. always Ukraine first on ukraine-russia)
+   Option B: Randomize per visit      RAMDOM
+   Option C: Detect by user locale/IP
+
+3. LANGUAGES TO SUPPORT AT LAUNCH
+   Which languages do you want for the initial launch? ENGLISH AND SPANISH
+   (e.g. English + Spanish only, or also Russian, Arabic, etc.)
+
+4. ARTICLE RENDERING
+   Should articles support full MDX (React components inside markdown)  THE BEST FOR SEO, IF REACT IS GOOD FOR SEO LETS GO REACT
+   or plain Markdown only? MDX adds complexity but allows embeds.
+
+5. EXISTING ROUTES
+   Current project has /noticias (Spanish) and /news (English) routes.
+   These would be replaced by /[lang]/news and /[lang]/noticias.
+   Is that fine or do you need to keep the old URLs? FINE
+ALSO WRITE A DOCUMENTATION FOR WHEN YOU FINISH SO I CAN GIVE IT TO FREAKING OPENCLAW (LY)
+================================================================================

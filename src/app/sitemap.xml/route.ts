@@ -1,64 +1,23 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getAllArticles, getAllConflictArticleParams } from '@/lib/content';
+import { SITE_URL } from '@/lib/seo';
 
 export async function GET() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const langs = ['en', 'es'];
+  const urls: string[] = [];
 
-  const articles = await prisma.article.findMany({
-    orderBy: { publishedAt: 'desc' },
-    select: {
-      slug: true,
-      language: true,
-      updatedAt: true,
-    },
-  });
+  for (const lang of langs) {
+    urls.push(`<url><loc>${SITE_URL}/${lang}</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>`);
+    for (const a of getAllArticles({ lang }).filter((x) => !x.conflict)) {
+      urls.push(`<url><loc>${SITE_URL}/${lang}/news/${a.slug}</loc><lastmod>${a.date}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>`);
+    }
+  }
+  for (const p of getAllConflictArticleParams()) {
+    urls.push(`<url><loc>${SITE_URL}/${p.lang}/conflict/${p.conflict}/${p.article}</loc><changefreq>daily</changefreq><priority>0.9</priority></url>`);
+  }
 
-  const categories = [
-    'politics',
-    'business',
-    'technology',
-    'sports',
-    'health',
-    'entertainment',
-    'science',
-    'general',
-  ];
-
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>${siteUrl}</loc>
-    <changefreq>hourly</changefreq>
-    <priority>1.0</priority>
-  </url>
-  ${categories
-    .map(
-      (category) => `
-  <url>
-    <loc>${siteUrl}/category/${category}</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>`
-    )
-    .join('')}
-  ${articles
-    .map((article) => {
-      const path = article.language === 'es' ? 'noticias' : 'news';
-      return `
-  <url>
-    <loc>${siteUrl}/${path}/${article.slug}</loc>
-    <lastmod>${article.updatedAt.toISOString()}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>`;
-    })
-    .join('')}
-</urlset>`;
-
-  return new NextResponse(sitemap, {
-    headers: {
-      'Content-Type': 'application/xml',
-      'Cache-Control': 'public, max-age=3600, s-maxage=3600',
-    },
+  return new NextResponse(`<?xml version="1.0"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.join('')}</urlset>`, {
+    headers: { 'Content-Type': 'application/xml' },
   });
 }
+

@@ -1,46 +1,70 @@
 import Link from 'next/link';
+import LanguageSwitcher from './LanguageSwitcher';
+import { getAllCategories, getCategoryLabel } from '@/lib/categories';
+import { getAllConflicts } from '@/lib/conflicts';
+import type { Lang } from '@/lib/i18n';
+import { getCategoryUrl, t } from '@/lib/i18n';
 
-const categories = [
-  { name: 'Politics', slug: 'politics' },
-  { name: 'Business', slug: 'business' },
-  { name: 'Technology', slug: 'technology' },
-  { name: 'Sports', slug: 'sports' },
-  { name: 'Health', slug: 'health' },
-  { name: 'Entertainment', slug: 'entertainment' },
-];
+interface Props {
+  lang: Lang;
+}
 
-export default function Header() {
+export default function Header({ lang }: Props) {
+  const categories = getAllCategories();
+  const conflicts = getAllConflicts().filter((c) => c.active);
+  const tx = t(lang);
+
   return (
     <header className="bg-white border-b-4 border-primary-600 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="py-6 text-center border-b border-gray-200">
-          <Link href="/" className="inline-block">
-            <h1 className="text-5xl font-serif font-bold text-gray-900 tracking-tight">
+        {/* Top bar: logo + lang switcher */}
+        <div className="py-5 flex items-center justify-between border-b border-gray-100">
+          <Link href={`/${lang}`} className="inline-block">
+            <h1 className="text-4xl font-serif font-bold text-gray-900 tracking-tight">
               Vivaldi News
             </h1>
-            <p className="text-sm text-gray-600 mt-2 tracking-wide uppercase">
-              Trending Now, Written Fresh
+            <p className="text-xs text-gray-500 mt-1 tracking-widest uppercase">
+              {tx.tagline}
             </p>
           </Link>
+          <LanguageSwitcher currentLang={lang} />
         </div>
-        
-        <nav className="py-4">
-          <ul className="flex items-center justify-center space-x-8 text-sm font-medium">
+
+        {/* Nav */}
+        <nav className="py-3 overflow-x-auto">
+          <ul className="flex items-center gap-6 text-sm font-medium whitespace-nowrap">
             <li>
-              <Link 
-                href="/" 
-                className="text-gray-700 hover:text-primary-600 transition-colors uppercase tracking-wide"
-              >
-                Home
+              <Link href={`/${lang}`} className="text-gray-700 hover:text-primary-600 transition-colors uppercase tracking-wide">
+                {tx.home}
               </Link>
             </li>
-            {categories.map((category) => (
-              <li key={category.slug}>
+
+            {/* Categories */}
+            {categories.map((cat) => (
+              <li key={cat.slug}>
                 <Link
-                  href={`/category/${category.slug}`}
+                  href={getCategoryUrl(cat.slug, lang)}
                   className="text-gray-700 hover:text-primary-600 transition-colors uppercase tracking-wide"
                 >
-                  {category.name}
+                  {getCategoryLabel(cat, lang)}
+                </Link>
+              </li>
+            ))}
+
+            {/* Conflicts separator */}
+            {conflicts.length > 0 && (
+              <li className="text-gray-300 select-none">|</li>
+            )}
+
+            {/* Conflict links */}
+            {conflicts.map((conflict) => (
+              <li key={conflict.slug}>
+                <Link
+                  href={`/${lang}/conflict/${conflict.slug}`}
+                  className="flex items-center gap-1 text-red-600 hover:text-red-700 transition-colors font-semibold uppercase tracking-wide text-xs"
+                >
+                  <span>⚡</span>
+                  <span>{conflict.sideA.name} vs {conflict.sideB.name}</span>
                 </Link>
               </li>
             ))}
