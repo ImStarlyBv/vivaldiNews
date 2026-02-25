@@ -1,0 +1,19 @@
+{
+  "slug": "business",
+  "label": {
+    "en": "Business",
+    "es": "Negocios"
+  },
+  "description": {
+    "en": "Business, economy, markets and finance",
+    "es": "Negocios, economía y mercados"
+  },
+  "seoTitle": {
+    "en": "Business | Vivaldi News",
+    "es": "Negocios | Vivaldi News"
+  },
+  "metaDescription": {
+    "en": "Latest business and economy news",
+    "es": "Últimas noticias de negocios y economía"
+  }
+}

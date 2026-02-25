@@ -1,0 +1,20 @@
+{
+  "slug": "ukraine-russia",
+  "title": "Ukraine - Russia War",
+  "sideA": {
+    "name": "Ukraine",
+    "label": "Ukrainian Perspective",
+    "flag": "🇺🇦",
+    "color": "#0057B7",
+    "accentColor": "#FFD700"
+  },
+  "sideB": {
+    "name": "Russia",
+    "label": "Russian Perspective",
+    "flag": "🇷🇺",
+    "color": "#CC0000",
+    "accentColor": "#FFFFFF"
+  },
+  "description": "Ongoing war between Russia and Ukraine since February 2022",
+  "active": true
+}

@@ -1,0 +1,20 @@
+{
+  "slug": "israel-palestine",
+  "title": "Israel - Palestine Conflict",
+  "sideA": {
+    "name": "Israel",
+    "label": "Israeli Perspective",
+    "flag": "🇮🇱",
+    "color": "#003399",
+    "accentColor": "#FFFFFF"
+  },
+  "sideB": {
+    "name": "Palestine",
+    "label": "Palestinian Perspective",
+    "flag": "🇵🇸",
+    "color": "#007A3D",
+    "accentColor": "#FFFFFF"
+  },
+  "description": "Ongoing Israel-Palestine conflict",
+  "active": true
+}

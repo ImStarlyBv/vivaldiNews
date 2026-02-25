@@ -1,0 +1,19 @@
+{
+  "slug": "sports",
+  "label": {
+    "en": "Sports",
+    "es": "Deportes"
+  },
+  "description": {
+    "en": "Sports news, results and analysis",
+    "es": "Noticias deportivas, resultados y análisis"
+  },
+  "seoTitle": {
+    "en": "Sports | Vivaldi News",
+    "es": "Deportes | Vivaldi News"
+  },
+  "metaDescription": {
+    "en": "Latest sports news",
+    "es": "Últimas noticias deportivas"
+  }
+}

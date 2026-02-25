@@ -1,0 +1,19 @@
+{
+  "slug": "world",
+  "label": {
+    "en": "World",
+    "es": "Mundo"
+  },
+  "description": {
+    "en": "International news and global affairs",
+    "es": "Noticias internacionales y asuntos globales"
+  },
+  "seoTitle": {
+    "en": "World News | Vivaldi News",
+    "es": "Noticias del Mundo | Vivaldi News"
+  },
+  "metaDescription": {
+    "en": "Latest world news from all perspectives",
+    "es": "Últimas noticias del mundo desde todas las perspectivas"
+  }
+}

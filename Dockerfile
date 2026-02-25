@@ -9,7 +9,7 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN node scripts/setup.js && npx next build
+RUN npx next build
 
 # Stage 2: Runner
 FROM node:20-alpine AS runner

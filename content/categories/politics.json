@@ -1,0 +1,19 @@
+{
+  "slug": "politics",
+  "label": {
+    "en": "Politics",
+    "es": "Política"
+  },
+  "description": {
+    "en": "Political news, elections, and government affairs",
+    "es": "Noticias políticas, elecciones y gobierno"
+  },
+  "seoTitle": {
+    "en": "Politics | Vivaldi News",
+    "es": "Política | Vivaldi News"
+  },
+  "metaDescription": {
+    "en": "Latest political news",
+    "es": "Últimas noticias políticas"
+  }
+}
