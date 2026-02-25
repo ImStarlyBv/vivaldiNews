@@ -2,6 +2,9 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# Install dependencies needed for Prisma on Alpine
+RUN apk add --no-cache openssl libc6-compat
+
 # Copy package files
 COPY package.json package-lock.json* ./
 
@@ -13,12 +16,15 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Generate Prisma client and build
-RUN npx prisma generate && node scripts/setup.js && npm run build
+# Generate Prisma client, run setup, and build
+RUN npx prisma generate && node scripts/setup.js && next build
 
 # Stage 2: Runner (standalone)
 FROM node:20-alpine AS runner
 WORKDIR /app
+
+# Install dependencies needed for Prisma on Alpine
+RUN apk add --no-cache openssl libc6-compat
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
