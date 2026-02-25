@@ -13,8 +13,8 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Run setup to scaffold content/routes, then build
-RUN node scripts/setup.js && npm run build
+# Generate Prisma client and build
+RUN npx prisma generate && node scripts/setup.js && npm run build
 
 # Stage 2: Runner (standalone)
 FROM node:20-alpine AS runner
@@ -26,17 +26,25 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs \
  && adduser --system --uid 1001 nextjs
 
+# Install Prisma CLI for migrations
+RUN npm install -g prisma
+
 # Copy standalone build output
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 # Copy content directory (articles and categories)
 COPY --from=builder /app/content ./content
+# Copy Prisma schema and migrations for runtime migrations
+COPY --from=builder /app/prisma ./prisma
+# Copy generated Prisma client
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
-RUN chown -R nextjs:nextjs /app || true
+RUN chown -R nextjs:nextjs /app
 
 USER nextjs
 
-EXPOSE 8347
+EXPOSE 3000
 
 CMD ["node", "server.js"]
