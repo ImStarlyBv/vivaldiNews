@@ -1,0 +1,189 @@
+0
+========================================
+2026-Feb-25 01:33:42.757502
+Deployment failed: Command execution failed (exit code 1): docker exec h040ogw8008kg8k8gog4g448 bash -c 'bash /artifacts/build.sh'
+2026-Feb-25 01:33:42.757502
+Error: #0 building with "default" instance using docker driver
+2026-Feb-25 01:33:42.757502
+2026-Feb-25 01:33:42.757502
+#1 [internal] load build definition from Dockerfile
+2026-Feb-25 01:33:42.757502
+#1 transferring dockerfile: 1.48kB 0.0s done
+2026-Feb-25 01:33:42.757502
+#1 DONE 0.1s
+2026-Feb-25 01:33:42.757502
+2026-Feb-25 01:33:42.757502
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+2026-Feb-25 01:33:42.757502
+#2 DONE 0.7s
+2026-Feb-25 01:33:42.757502
+2026-Feb-25 01:33:42.757502
+#3 [internal] load .dockerignore
+2026-Feb-25 01:33:42.757502
+#3 transferring context: 140B done
+2026-Feb-25 01:33:42.757502
+#3 DONE 0.0s
+2026-Feb-25 01:33:42.757502
+2026-Feb-25 01:33:42.757502
+#4 [builder 1/6] FROM docker.io/library/node:20-alpine@sha256:09e2b3d9726018aecf269bd35325f46bf75046a643a66d28360ec71132750ec8
+2026-Feb-25 01:33:42.757502
+#4 resolve docker.io/library/node:20-alpine@sha256:09e2b3d9726018aecf269bd35325f46bf75046a643a66d28360ec71132750ec8 0.0s done
+2026-Feb-25 01:33:42.757502
+#4 sha256:09e2b3d9726018aecf269bd35325f46bf75046a643a66d28360ec71132750ec8 7.67kB / 7.67kB done
+2026-Feb-25 01:33:42.757502
+#4 sha256:c3324aa3efea082c8d294a93b97ba82adc5498a202bd48802f5a8af152e7dd9e 1.72kB / 1.72kB done
+2026-Feb-25 01:33:42.757502
+#4 sha256:458b0b7c1c6027b37124839bf527a5c54936ab27a9c9643051a3d801c4560a6c 6.52kB / 6.52kB done
+2026-Feb-25 01:33:42.757502
+#4 DONE 0.2s
+2026-Feb-25 01:33:42.757502
+2026-Feb-25 01:33:42.757502
+#5 [internal] load build context
+2026-Feb-25 01:33:42.757502
+#5 transferring context: 210.40kB 0.0s done
+2026-Feb-25 01:33:42.757502
+#5 DONE 0.1s
+2026-Feb-25 01:33:42.757502
+2026-Feb-25 01:33:42.757502
+#6 [builder 2/6] WORKDIR /app
+2026-Feb-25 01:33:42.757502
+#6 DONE 0.1s
+2026-Feb-25 01:33:42.757502
+2026-Feb-25 01:33:42.757502
+#7 [runner 3/8] RUN addgroup --system --gid 1001 nodejs  && adduser --system --uid 1001 nextjs
+2026-Feb-25 01:33:42.757502
+#7 ...
+2026-Feb-25 01:33:42.757502
+2026-Feb-25 01:33:42.757502
+#8 [builder 3/6] COPY package.json package-lock.json* ./
+2026-Feb-25 01:33:42.757502
+#8 DONE 0.3s
+2026-Feb-25 01:33:42.757502
+2026-Feb-25 01:33:42.757502
+#9 [builder 4/6] RUN npm install --legacy-peer-deps
+2026-Feb-25 01:33:42.757502
+#9 ...
+2026-Feb-25 01:33:42.757502
+2026-Feb-25 01:33:42.757502
+#7 [runner 3/8] RUN addgroup --system --gid 1001 nodejs  && adduser --system --uid 1001 nextjs
+2026-Feb-25 01:33:42.757502
+#7 DONE 0.5s
+2026-Feb-25 01:33:42.757502
+2026-Feb-25 01:33:42.757502
+#9 [builder 4/6] RUN npm install --legacy-peer-deps
+2026-Feb-25 01:33:42.757502
+#9 7.802 npm warn reify invalid or damaged lockfile detected
+2026-Feb-25 01:33:42.757502
+#9 7.802 npm warn reify please re-try this operation once it completes
+2026-Feb-25 01:33:42.757502
+#9 7.802 npm warn reify so that the damage can be corrected, or perform
+2026-Feb-25 01:33:42.757502
+#9 7.802 npm warn reify a fresh install with no lockfile if the problem persists.
+2026-Feb-25 01:33:42.757502
+#9 53.30
+2026-Feb-25 01:33:42.757502
+#9 53.30 > vivaldi-news@2.0.0 postinstall
+2026-Feb-25 01:33:42.757502
+#9 53.30 > node scripts/setup.js
+2026-Feb-25 01:33:42.757502
+#9 53.30
+2026-Feb-25 01:33:42.757502
+#9 53.41 node:internal/modules/cjs/loader:1210
+2026-Feb-25 01:33:42.757502
+#9 53.41   throw err;
+2026-Feb-25 01:33:42.757502
+#9 53.41   ^
+2026-Feb-25 01:33:42.757502
+#9 53.41
+2026-Feb-25 01:33:42.757502
+#9 53.41 Error: Cannot find module '/app/scripts/setup.js'
+2026-Feb-25 01:33:42.757502
+#9 53.41     at Module._resolveFilename (node:internal/modules/cjs/loader:1207:15)
+2026-Feb-25 01:33:42.757502
+#9 53.41     at Module._load (node:internal/modules/cjs/loader:1038:27)
+2026-Feb-25 01:33:42.757502
+#9 53.41     at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)
+2026-Feb-25 01:33:42.757502
+#9 53.41     at node:internal/main/run_main_module:28:49 {
+2026-Feb-25 01:33:42.757502
+#9 53.41   code: 'MODULE_NOT_FOUND',
+2026-Feb-25 01:33:42.757502
+#9 53.41   requireStack: []
+2026-Feb-25 01:33:42.757502
+#9 53.41 }
+2026-Feb-25 01:33:42.757502
+#9 53.41
+2026-Feb-25 01:33:42.757502
+#9 53.41 Node.js v20.20.0
+2026-Feb-25 01:33:42.757502
+#9 53.44 npm error code 1
+2026-Feb-25 01:33:42.757502
+#9 53.44 npm error path /app
+2026-Feb-25 01:33:42.757502
+#9 53.44 npm error command failed
+2026-Feb-25 01:33:42.757502
+#9 53.44 npm error command sh -c node scripts/setup.js
+2026-Feb-25 01:33:42.757502
+#9 53.45 npm notice
+2026-Feb-25 01:33:42.757502
+#9 53.45 npm notice New major version of npm available! 10.8.2 -> 11.10.1
+2026-Feb-25 01:33:42.757502
+#9 53.45 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.10.1
+2026-Feb-25 01:33:42.757502
+#9 53.45 npm notice To update run: npm install -g npm@11.10.1
+2026-Feb-25 01:33:42.757502
+#9 53.45 npm notice
+2026-Feb-25 01:33:42.757502
+#9 53.45 npm error A complete log of this run can be found in: /root/.npm/_logs/2026-02-25T01_32_49_353Z-debug-0.log
+2026-Feb-25 01:33:42.757502
+#9 ERROR: process "/bin/sh -c npm install --legacy-peer-deps" did not complete successfully: exit code: 1
+2026-Feb-25 01:33:42.757502
+------
+2026-Feb-25 01:33:42.757502
+> [builder 4/6] RUN npm install --legacy-peer-deps:
+2026-Feb-25 01:33:42.757502
+53.44 npm error code 1
+2026-Feb-25 01:33:42.757502
+53.44 npm error path /app
+2026-Feb-25 01:33:42.757502
+53.44 npm error command failed
+2026-Feb-25 01:33:42.757502
+53.44 npm error command sh -c node scripts/setup.js
+2026-Feb-25 01:33:42.757502
+53.45 npm notice
+2026-Feb-25 01:33:42.757502
+53.45 npm notice New major version of npm available! 10.8.2 -> 11.10.1
+2026-Feb-25 01:33:42.757502
+53.45 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.10.1
+2026-Feb-25 01:33:42.757502
+53.45 npm notice To update run: npm install -g npm@11.10.1
+2026-Feb-25 01:33:42.757502
+53.45 npm notice
+2026-Feb-25 01:33:42.757502
+53.45 npm error A complete log of this run can be found in: /root/.npm/_logs/2026-02-25T01_32_49_353Z-debug-0.log
+2026-Feb-25 01:33:42.757502
+------
+2026-Feb-25 01:33:42.757502
+Dockerfile:13
+2026-Feb-25 01:33:42.757502
+--------------------
+2026-Feb-25 01:33:42.757502
+11 |
+2026-Feb-25 01:33:42.757502
+12 |     # Install dependencies (triggers postinstall → scripts/setup.js)
+2026-Feb-25 01:33:42.757502
+13 | >>> RUN npm install --legacy-peer-deps
+2026-Feb-25 01:33:42.757502
+14 |
+2026-Feb-25 01:33:42.757502
+15 |     # Copy source (includes content/ if pre-seeded, otherwise setup.js creates it)
+2026-Feb-25 01:33:42.757502
+--------------------
+2026-Feb-25 01:33:42.757502
+ERROR: failed to build: failed to solve: process "/bin/sh -c npm install --legacy-peer-deps" did not complete successfully: exit code: 1
+2026-Feb-25 01:33:42.757502
+exit status 1
+2026-Feb-25 01:33:43.227442
+========================================
+2026-Feb-25 01:33:43.245525
+Deployment failed. Removing the new version of your application.

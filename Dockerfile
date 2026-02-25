@@ -5,16 +5,16 @@ WORKDIR /app
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install dependencies (triggers postinstall → scripts/setup.js)
-RUN npm install --legacy-peer-deps
+# Install dependencies (skip postinstall — scripts/ not copied yet)
+RUN npm install --legacy-peer-deps --ignore-scripts
 
-# Copy source (includes content/ if pre-seeded, otherwise setup.js creates it)
+# Copy source
 COPY . .
 
-# Build Next.js app (also runs setup.js to ensure directories exist)
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN npm run build
+# Run setup to scaffold content/routes, then build
+RUN node scripts/setup.js && npm run build
 
 # Stage 2: Runner (standalone)
 FROM node:20-alpine AS runner
