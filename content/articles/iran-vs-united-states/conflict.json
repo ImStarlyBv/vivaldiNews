@@ -1,0 +1,20 @@
+{
+  "slug": "iran-vs-united-states",
+  "title": "Iran - United States",
+  "sideA": {
+    "name": "United States",
+    "label": "U.S. Perspective",
+    "flag": "🇺🇸",
+    "color": "#002868",
+    "accentColor": "#BF0A30"
+  },
+  "sideB": {
+    "name": "Iran",
+    "label": "Iranian Perspective",
+    "flag": "🇮🇷",
+    "color": "#DA251D",
+    "accentColor": "#FFFFFF"
+  },
+  "description": "Diplomatic and regional tensions between Iran and the United States",
+  "active": true
+}
