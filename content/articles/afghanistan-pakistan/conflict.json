@@ -1,0 +1,20 @@
+{
+  "slug": "afghanistan-pakistan",
+  "title": "Afghanistan - Pakistan",
+  "sideA": {
+    "name": "Pakistan",
+    "label": "Pakistani Perspective",
+    "flag": "🇵🇰",
+    "color": "#01411C",
+    "accentColor": "#FFFFFF"
+  },
+  "sideB": {
+    "name": "Afghanistan",
+    "label": "Afghan Perspective",
+    "flag": "🇦🇫",
+    "color": "#000000",
+    "accentColor": "#D32011"
+  },
+  "description": "Military conflict and border tensions between Pakistan and Afghanistan's Taliban government",
+  "active": true
+}
